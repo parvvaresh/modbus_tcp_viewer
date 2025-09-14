@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modbus Reader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        async function fetchData() {
+            const unitId = document.getElementById("unit_id").value;
+            const response = await fetch(`/read?unit=${unitId}`);
+            const data = await response.json();
+            displayData(data);
+        }
+
+        function displayData(data) {
+            const container = document.getElementById("data_container");
+            container.innerHTML = "";
+            if (data.error) {
+                container.innerHTML = `<p style='color: red;'>${data.error}</p>`;
+                return;
+            }
+
+            for (const [key, values] of Object.entries(data)) {
+                if (key === "unit_id") continue;
+
+                const section = document.createElement("div");
+                section.className = "data-section";
+                section.innerHTML = `<h3>${key.replace(/_/g, ' ')}</h3>`;
+
+                const list = document.createElement("ul");
+                values.forEach((val, i) => {
+                    const item = document.createElement("li");
+                    item.textContent = `Address ${i}: ${val}`;
+                    list.appendChild(item);
+                });
+
+                section.appendChild(list);
+                container.appendChild(section);
+            }
+        }
+
+        window.onload = fetchData;
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #00507a;
+        }
+        .data-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .data-section h3 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        li {
+            padding: 3px 0;
+        }
+        select, button {
+            padding: 6px 12px;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        #controls {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Modbus Reader Web UI</h1>
+    <div id="controls">
+        <label for="unit_id">Unit ID:</label>
+        <select id="unit_id" onchange="fetchData()">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+        </select>
+        <button onclick="fetchData()">🔄 Refresh</button>
+    </div>
+    <div id="data_container"></div>
+</body>
+</html>
